@@ -5,7 +5,7 @@
 This is the code for the EnCodec neural codec presented in the [High Fidelity Neural Audio Compression](https://arxiv.org/pdf/2210.13438.pdf) [[abs]](https://arxiv.org/abs/2210.13438).
 paper. We provide our two multi-bandwidth models:
 * A causal model operating at 24 kHz on monophonic audio trained on a variety of audio data.
-* A non-causal model operationg at 48 kHz on stereophonic audio trained on music-only data.
+* A non-causal model operating at 48 kHz on stereophonic audio trained on music-only data.
 
 The 24 kHz model can compress to 1.5, 3, 6, 12 or 24 kbps, while the 48 kHz model
 support 3, 6, 12 and 24 kbps. We also provide a pre-trained language model for each
@@ -118,12 +118,17 @@ import torch
 
 # Instantiate a pretrained EnCodec model
 model = EncodecModel.encodec_model_24khz()
+# The number of codebooks used will be determined bythe bandwidth selected.
+# E.g. for a bandwidth of 6kbps, `n_q = 8` codebooks are used.
+# Supported bandwidths are 1.5kbps (n_q = 2), 3 kbps (n_q = 4), 6 kbps (n_q = 8) and 12 kbps (n_q =16) and 24kbps (n_q=32).
+# For the 48 kHz model, only 3, 6, 12, and 24 kbps are supported. The number
+# of codebooks for each is half that of the 24 kHz model as the frame rate is twice as much.
 model.set_target_bandwidth(6.0)
 
 # Load and pre-process the audio waveform
 wav, sr = torchaudio.load("<PATH_TO_AUDIO_FILE>")
-wav = wav.unsqueeze(0)
 wav = convert_audio(wav, sr, model.sample_rate, model.channels)
+wav = wav.unsqueeze(0)
 
 # Extract discrete codes from EnCodec
 with torch.no_grad():
@@ -178,5 +183,5 @@ If you use this code or results in your paper, please cite our work as:
 
 ## License
 
-This repository is released under the CC-BY-NC 4.0. license as found in the
+The code in this repository is released under the MIT license as found in the
 [LICENSE](LICENSE) file.
